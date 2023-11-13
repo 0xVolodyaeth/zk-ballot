@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import { mimcSpongecontract } from 'circomlibjs'
 import { Ballot } from "../typechain-types";
 import { generateCommitment, calculateMerkleRootAndZKProof } from '../src/zktree';
-import { BigNumber, Signer } from "ethers";
+import { BigNumber } from "ethers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
