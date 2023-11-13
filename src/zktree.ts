@@ -18,18 +18,21 @@ function calculateHash(mimc, left, right) {
     return BigNumber.from(mimc.F.toString(mimc.multiHash([left, right])))
 }
 
-export async function generateCommitment() {
+export async function generateCommitment(candidate: BigNumber) {
     const mimc = await buildMimcSponge();
-    const nullifier = BigNumber.from(crypto.randomBytes(31)).toString()
-    const secret = BigNumber.from(crypto.randomBytes(31)).toString()
-    const commitment = mimc.F.toString(mimc.multiHash([nullifier, secret]))
-    const nullifierHash = mimc.F.toString(mimc.multiHash([nullifier]))
+    const nullifier = BigNumber.from(crypto.randomBytes(31)).toString();
+    const secret = BigNumber.from(crypto.randomBytes(31)).toString();
+    const commitment = mimc.F.toString(
+        mimc.multiHash([nullifier, secret, candidate.toString()])
+    );
+    const nullifierHash = mimc.F.toString(mimc.multiHash([nullifier]));
     return {
-        nullifier: nullifier,
-        secret: secret,
-        commitment: commitment,
-        nullifierHash: nullifierHash
-    }
+        nullifier,
+        secret,
+        candidate: candidate.toString(),
+        commitment,
+        nullifierHash,
+    };
 }
 
 export function generateZeros(mimc: any, levels: number) {
@@ -40,7 +43,7 @@ export function generateZeros(mimc: any, levels: number) {
     return zeros
 }
 
-// calculates Merkle root from elements and a path to the given element 
+// calculates Merkle root from elements and a path to the given element
 export function calculateMerkleRootAndPath(mimc: any, levels: number, elements: any[], element?: any) {
     const capacity = 2 ** levels
     if (elements.length > capacity) throw new Error('Tree is full')
@@ -138,8 +141,11 @@ export async function calculateMerkleRootAndZKProof(address: any, provider: any,
     const rootAndPath = await calculateMerkleRootAndPathFromEvents(mimc, address, provider, levels, commitment.commitment);
     const { proof, publicSignals } = await snarkjs.groth16.fullProve(
         {
-            nullifier: commitment.nullifier, secret: commitment.secret,
-            pathElements: rootAndPath.pathElements, pathIndices: rootAndPath.pathIndices
+            nullifier: commitment.nullifier,
+            candidate: commitment.candidate,
+            secret: commitment.secret,
+            pathElements: rootAndPath.pathElements,
+            pathIndices: rootAndPath.pathIndices
         },
         getVerifierWASM(),
         zkey);
@@ -147,6 +153,7 @@ export async function calculateMerkleRootAndZKProof(address: any, provider: any,
     return {
         nullifierHash: publicSignals[0],
         root: publicSignals[1],
+        candidate: publicSignals[2],
         proof_a: cd.a,
         proof_b: cd.b,
         proof_c: cd.c

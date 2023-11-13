@@ -9,7 +9,7 @@ interface IVerifier {
         uint[2] memory a,
         uint[2][2] memory b,
         uint[2] memory c,
-        uint[2] memory input
+        uint[3] memory input
     ) external pure returns (bool r);
 }
 
@@ -42,6 +42,7 @@ contract ZKTree is MerkleTreeWithHistory {
     }
 
     function _nullify(
+        uint256 _candidate,
         bytes32 _nullifier,
         bytes32 _root,
         uint[2] memory _proof_a,
@@ -55,11 +56,11 @@ contract ZKTree is MerkleTreeWithHistory {
                 _proof_a,
                 _proof_b,
                 _proof_c,
-                [uint256(_nullifier), uint256(_root)]
+                [uint256(_nullifier), uint256(_root), _candidate]
             ),
             "Invalid proof"
         );
 
-        nullifiers[_nullifier] = true;        
+        nullifiers[_nullifier] = true;
     }
 }

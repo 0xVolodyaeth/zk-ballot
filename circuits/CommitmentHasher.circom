@@ -5,14 +5,18 @@ include "../node_modules/circomlib/circuits/mimcsponge.circom";
 template CommitmentHasher() {
     signal input nullifier;
     signal input secret;
+    signal input candidate;
+
     signal output commitment;
     signal output nullifierHash;
+    signal output candidateOut;
 
-    component commitmentHasher = MiMCSponge(2, 220, 1);
+    component commitmentHasher = MiMCSponge(3, 220, 1);
     component nullifierHasher = MiMCSponge(1, 220, 1);
 
     commitmentHasher.ins[0] <== nullifier;
     commitmentHasher.ins[1] <== secret;
+    commitmentHasher.ins[2] <== candidate;
     commitmentHasher.k <== 0;
 
     nullifierHasher.ins[0] <== nullifier;
@@ -20,4 +24,5 @@ template CommitmentHasher() {
 
     commitment <== commitmentHasher.outs[0];
     nullifierHash <== nullifierHasher.outs[0];
+    candidateOut <== candidate;
 }

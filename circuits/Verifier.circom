@@ -8,14 +8,18 @@ template Verifier(levels) {
     signal input secret;
     signal input pathElements[levels];
     signal input pathIndices[levels];
+    signal input candidate;
+
     signal output nullifierHash;
     signal output root;
+    signal output candidateOut;
 
     component commitmentHasher = CommitmentHasher();
     component merkleTreeChecker = MerkleTreeChecker(levels);
 
     commitmentHasher.nullifier <== nullifier;
     commitmentHasher.secret <== secret;
+    commitmentHasher.candidate <== candidate;
 
     merkleTreeChecker.leaf <== commitmentHasher.commitment;
     for (var i = 0; i < levels; i++) {
@@ -24,6 +28,7 @@ template Verifier(levels) {
     }
 
     nullifierHash <== commitmentHasher.nullifierHash;
+    candidateOut <== commitmentHasher.candidate;
     root <== merkleTreeChecker.root;
 }
 
